@@ -33,7 +33,7 @@ async def create_project(
     # 1. Process PDF files
     if pdf_files:
         for file in pdf_files:
-            if file.filename.lower().endswith('.pdf'):
+            if file and getattr(file, 'filename', None) and file.filename.lower().endswith('.pdf'):
                 file_bytes = await file.read()
                 parsed_text = ingestion_service.parse_pdf(file_bytes, file.filename)
                 chunks = ingestion_service.semantic_chunking(parsed_text, file.filename)
