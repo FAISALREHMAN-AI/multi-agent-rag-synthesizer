@@ -1,12 +1,15 @@
 import os
-from pydantic_settings import BaseSettings
+import tempfile
+
+db_dir = "/tmp" if os.path.exists("/tmp") else "."
+db_file = os.path.join(db_dir, "synthetix.db")
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Synthetix AI - Multi-Agent RAG Synthesizer"
     API_V1_STR: str = "/api/v1"
     
     # Database Settings
-    DATABASE_URL: str = "sqlite+aiosqlite:///./synthetix.db"
+    DATABASE_URL: str = f"sqlite+aiosqlite:///{db_file}"
     
     # Vector Search / RAG Settings
     DEFAULT_CHUNK_SIZE: int = 500
