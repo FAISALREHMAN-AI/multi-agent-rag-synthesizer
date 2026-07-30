@@ -28,20 +28,34 @@ export const DocumentIngestor: React.FC<DocumentIngestorProps> = ({ isOpen, onCl
 
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append('title', title);
-      if (urls) formData.append('urls', urls);
-      if (githubRepos) formData.append('github_repos', githubRepos);
-
-      files.forEach((file) => {
-        formData.append('pdf_files', file);
-      });
-
       const API_BASE = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${API_BASE}/api/v1/projects/`, {
-        method: 'POST',
-        body: formData,
-      });
+      let res;
+
+      if (files.length === 0) {
+        res = await fetch(`${API_BASE}/api/v1/projects/json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: title,
+            urls: urls || null,
+            github_repos: githubRepos || null,
+          }),
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('title', title);
+        if (urls) formData.append('urls', urls);
+        if (githubRepos) formData.append('github_repos', githubRepos);
+
+        files.forEach((file) => {
+          formData.append('pdf_files', file);
+        });
+
+        res = await fetch(`${API_BASE}/api/v1/projects/`, {
+          method: 'POST',
+          body: formData,
+        });
+      }
 
       if (!res.ok) throw new Error('Failed to create project');
       const project = await res.json();

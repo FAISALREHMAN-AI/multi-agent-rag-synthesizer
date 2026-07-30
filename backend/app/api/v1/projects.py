@@ -12,7 +12,85 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
 ingestion_service = DocumentIngestionService()
 
 # In-memory document chunks index store keyed by project_id for fast hybrid search
-project_chunks_store = {}
+from pydantic import BaseModel
+
+class ProjectJsonCreate(BaseModel):
+    title: str
+    urls: Optional[str] = None
+    github_repos: Optional[str] = None
+
+@router.post("/json", response_model=ProjectResponse)
+async def create_project_json(
+    payload: ProjectJsonCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    """Create a new project via clean JSON payload (Vercel Serverless Compatible)."""
+    new_project = Project(title=payload.title)
+    db.add(new_project)
+    await db.commit()
+    await db.refresh(new_project)
+    
+    all_chunks = []
+    
+    if payload.urls:
+        url_list = [u.strip() for u in payload.urls.split(',') if u.strip()]
+        for url in url_list:
+            parsed_text = ingestion_service.parse_url(url)
+            chunks = ingestion_service.semantic_chunking(parsed_text, url)
+            all_chunks.extend(chunks)
+            
+            doc = Document(
+                project_id=new_project.id,
+                file_name=url,
+                file_type="url",
+                status="indexed",
+                chunk_count=len(chunks),
+                content_preview=parsed_text[:300]
+            )
+            db.add(doc)
+
+    if payload.github_repos:
+        repo_list = [r.strip() for r in payload.github_repos.split(',') if r.strip()]
+        for repo in repo_list:
+            parsed_text = ingestion_service.parse_github_repo(repo)
+            chunks = ingestion_service.semantic_chunking(parsed_text, repo)
+            all_chunks.extend(chunks)
+            
+            doc = Document(
+                project_id=new_project.id,
+                file_name=repo,
+                file_type="github",
+                status="indexed",
+                chunk_count=len(chunks),
+                content_preview=parsed_text[:300]
+            )
+            db.add(doc)
+
+    if not all_chunks:
+        sample_text = f"# Multi-Agent RAG Synthesis Overview for {payload.title}\n\nThis project provides an automated pipeline for multi-document research, semantic chunking, and hybrid vector-BM25 retrieval."
+        chunks = ingestion_service.semantic_chunking(sample_text, "Default Overview")
+        all_chunks.extend(chunks)
+        
+        doc = Document(
+            project_id=new_project.id,
+            file_name="Overview Document",
+            file_type="overview",
+            status="indexed",
+            chunk_count=len(chunks),
+            content_preview=sample_text[:300]
+        )
+        db.add(doc)
+
+    await db.commit()
+    project_chunks_store[new_project.id] = all_chunks
+
+    return ProjectResponse(
+        id=new_project.id,
+        title=new_project.title,
+        created_at=new_project.created_at,
+        document_count=len(all_chunks),
+        status="indexed"
+    )
 
 @router.post("/", response_model=ProjectResponse)
 async def create_project(
