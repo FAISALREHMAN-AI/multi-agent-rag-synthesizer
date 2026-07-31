@@ -69,7 +69,7 @@ export const DocumentIngestor: React.FC<DocumentIngestorProps> = ({ isOpen, onCl
     } catch (err) {
       console.warn('Backend API endpoint unreachable, running in autonomous static preview mode:', err);
       const docCount = urls ? urls.split(',').length : (githubRepos ? githubRepos.split(',').length : 1);
-      const fallbackProject: Project = {
+      const fallbackProject = {
         id: `proj_${Date.now()}`,
         title: title,
         created_at: new Date().toISOString(),

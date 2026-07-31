@@ -20,8 +20,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenNewProject, activeProjectT
               <span className="font-extrabold text-lg tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
                 SYNTHETIX <span className="text-primary-500 font-black">AI</span>
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wider text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/20 rounded-full uppercase">
-                Enterprise RAG
+              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full uppercase">
+                v2.0 Standalone
               </span>
             </div>
             <p className="text-xs text-slate-400 font-medium">Multi-Agent RAG & Knowledge Synthesizer</p>

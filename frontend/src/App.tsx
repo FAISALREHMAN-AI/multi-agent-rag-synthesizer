@@ -128,28 +128,31 @@ export default function App() {
       
       // Step 1: Researcher Node
       setLogs([{
-        id: '1',
-        node: 'researcher',
-        step: `Searching vector embeddings & sparse BM25 RRF index for: "${query}"`,
-        status: 'running',
+        step: 'Researcher',
+        agent: 'Dense Vector & Sparse BM25 RRF Retriever',
+        status: 'active',
+        message: `Searching vector embeddings & sparse BM25 RRF index for: "${query}"`,
         timestamp: new Date().toLocaleTimeString()
       }]);
       await simulateStep(1200);
 
       setLogs((prev) => [
-        ...prev.map((l) => l.id === '1' ? { ...l, status: 'completed' as const } : l),
         {
-          id: '2',
-          node: 'researcher',
-          step: 'Retrieved top 15 semantic chunks via Reciprocal Rank Fusion (RRF score: 0.032).',
+          ...prev[0],
+          status: 'completed'
+        },
+        {
+          step: 'Researcher',
+          agent: 'Dense Vector & Sparse BM25 RRF Retriever',
           status: 'completed',
+          message: 'Retrieved top 15 semantic chunks via Reciprocal Rank Fusion (RRF score: 0.032).',
           timestamp: new Date().toLocaleTimeString()
         },
         {
-          id: '3',
-          node: 'writer',
-          step: 'Synthesizing research notes into structured Markdown report draft...',
-          status: 'running',
+          step: 'Writer',
+          agent: 'LangGraph Technical Report Synthesizer',
+          status: 'active',
+          message: 'Synthesizing research notes into structured Markdown report draft...',
           timestamp: new Date().toLocaleTimeString()
         }
       ]);
@@ -157,12 +160,12 @@ export default function App() {
 
       // Step 2: Reviewer Node
       setLogs((prev) => [
-        ...prev.map((l) => l.id === '3' ? { ...l, status: 'completed' as const } : l),
+        ...prev.map((l) => l.step === 'Writer' ? { ...l, status: 'completed' as const } : l),
         {
-          id: '4',
-          node: 'reviewer',
-          step: 'Auditing draft for factual consistency, tone, and hallucination risk...',
-          status: 'running',
+          step: 'Reviewer',
+          agent: 'LangGraph Self-Correction Reviewer',
+          status: 'active',
+          message: 'Auditing draft for factual consistency, tone, and hallucination risk...',
           timestamp: new Date().toLocaleTimeString()
         }
       ]);
@@ -170,12 +173,12 @@ export default function App() {
 
       // Step 3: Ragas Benchmark
       setLogs((prev) => [
-        ...prev.map((l) => l.id === '4' ? { ...l, status: 'completed' as const } : l),
+        ...prev.map((l) => l.step === 'Reviewer' ? { ...l, status: 'completed' as const } : l),
         {
-          id: '5',
-          node: 'evaluator',
-          step: 'Evaluated report against Ragas benchmarks: Faithfulness 88%, Relevance 98%.',
+          step: 'Evaluation',
+          agent: 'Ragas Benchmark Quality Evaluator',
           status: 'completed',
+          message: 'Evaluated report against Ragas benchmarks: Faithfulness 88%, Relevance 98%.',
           timestamp: new Date().toLocaleTimeString()
         }
       ]);
@@ -185,7 +188,7 @@ export default function App() {
         answer_relevance: 0.98,
         context_precision: 0.95,
         context_recall: 0.94,
-        overall: 0.91
+        overall_ragas_score: 0.91
       });
 
       setReportContent(`# Executive Knowledge Synthesis: ${query}\n\n` +
