@@ -111,7 +111,6 @@ export default function App() {
         setIsExecuting(false);
       };
 
-      // 2. Trigger Query Execution API
       const res = await fetch(`${API_BASE}/api/v1/query/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -120,6 +119,10 @@ export default function App() {
           query: query,
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`API server returned status ${res.status}`);
+      }
 
     } catch (err) {
       console.warn('Backend server unreachable, executing autonomous LangGraph multi-agent simulation mode:', err);
